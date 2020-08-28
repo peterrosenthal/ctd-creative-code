@@ -7,21 +7,31 @@ public class AtlasLogo extends PApplet {
     public int canvasHeight   = 500;
     public int logoWidth      = 280;
     public int logoHeight     = 230;
-
     public float segmentWidth = 0.25f;
-    public float speed        = 2f;
-
-    public PShape[] shapes = new PShape[7];
+    public float segmentSpeed = 2f;
+    public float colorSpeed   = 10f;
+    public int[][] colors = {
+            {183,  28,  28},
+            {  1,  87, 155},
+            { 51, 105,  30},
+            {245, 127,  23}
+    };
+    public PShape[] shapes = new PShape[6];
 
     public void settings() {
         size(canvasWidth, canvasHeight);
     }
 
     public void draw() {
-        background(0, 0, 0);
+        float t = (millis() * colorSpeed * 0.0001f) % colors.length;
+        int index = floor(t);
+        background(lerp(colors[index][0], colors[(index + 1) % (colors.length)][0], t - index),
+                lerp(colors[index][1], colors[(index + 1) % (colors.length)][1], t - index),
+                lerp(colors[index][2], colors[(index + 1) % (colors.length)][2], t - index));
+        //background(0, 0, 0);
         fill(255, 255, 255);
         noStroke();
-        updateShapes(millis() * speed * 0.0001f, segmentWidth);
+        updateShapes(millis() * segmentSpeed * 0.0001f, segmentWidth);
         for (int i = 0; i < shapes.length; i++) {
             shape(shapes[i]);
         }
