@@ -3,10 +3,10 @@ import processing.core.PShape;
 
 public class AtlasLogo extends PApplet {
 
-    public int canvasWidth    = 1000;
-    public int canvasHeight   = 1000;
-    public int logoWidth      = 500;//280;
-    public int logoHeight     = 450;//230;
+    public int canvasWidth    = 500;
+    public int canvasHeight   = 500;
+    public int logoWidth      = 280;
+    public int logoHeight     = 230;
     public float segmentWidth = 0.25f;
     public float speed        = 2f;
     public int[][] colors = {
