@@ -3,12 +3,13 @@ import processing.core.PShape;
 
 public class AtlasLogo extends PApplet {
 
-    public int canvasWidth    = 500;
-    public int canvasHeight   = 500;
-    public int logoWidth      = 280;
-    public int logoHeight     = 230;
-    public float segmentWidth = 0.25f;
-    public float speed        = 2f;
+    public int canvasWidth      = 500;
+    public int canvasHeight     = 500;
+    public int logoWidth        = 280;
+    public int logoHeight       = 230;
+    public float segmentWidth   = 0.25f;
+    public float segmentSpacing = 1f / 3f;
+    public float speed          = 2f;
     public int[][] colors = {
             {231,   0,   0},
             {255, 140,   0},
@@ -25,16 +26,15 @@ public class AtlasLogo extends PApplet {
 
     public void draw() {
         background(0, 0, 0);
-        updateShapes(millis() * speed * 0.0001f);
+        updateShapes();
         for (int i = 0; i < shapes.length; i++) {
             shape(shapes[i]);
         }
     }
 
-    public void updateShapes(float t) {
-        t = t % 2 + 1;
+    public void updateShapes() {
         for (int i = 0; i < shapes.length; i++) {
-            t -= 1f / 3f;
+            float t = (millis() * speed * 0.0001f) % 2 + 1 - i * segmentSpacing;
             shapes[i] = createShape();
             shapes[i].beginShape();
 
