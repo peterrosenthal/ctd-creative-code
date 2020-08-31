@@ -27,8 +27,8 @@ public class AtlasLogo extends PApplet {
     public void draw() {
         background(0, 0, 0);
         updateShapes();
-        for (int i = 0; i < shapes.length; i++) {
-            shape(shapes[i]);
+        for (PShape shape : shapes) {
+            shape(shape);
         }
     }
 
