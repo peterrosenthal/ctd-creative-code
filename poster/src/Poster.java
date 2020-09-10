@@ -10,8 +10,12 @@ public class Poster extends PApplet {
 
     public int simulationWidth  = 20;
     public int simulationHeight = 20;
+    public int simulationDrawWidth  = 400;
+    public int simulationDrawHeight = 400;
 
-    public int startingSnakes = 10;
+    public int startingSnakes = 20;
+
+    public int framesPerStep = 20;
 
     public ArrayList<SnakeBoid> snakeBoids;
 
@@ -20,14 +24,9 @@ public class Poster extends PApplet {
     }
 
     public void setup() {
-        frameRate(10);
         snakeBoids = new ArrayList<SnakeBoid>();
         PVector boundaries = new PVector(simulationWidth, simulationHeight);
         for (int i = 0; i < startingSnakes; i++) {
-            //float r = 20;
-            //float theta = i * (2 * PI) / startingSnakes;
-            //PVector pos = new PVector(r * cos(theta) + 25, r * sin(theta) + 25);
-            //snakeBoids.add(new SnakeBoid(boundaries, pos, new PVector(0, 0)));
             snakeBoids.add(new SnakeBoid(boundaries));
         }
     }
@@ -36,14 +35,16 @@ public class Poster extends PApplet {
         background(0, 0, 0);
         fill(255, 255, 255);
         noStroke();
-        for (SnakeBoid snake : snakeBoids) {
-            snake.ChangeDirection(snakeBoids);
+
+        float t = (frameCount % framesPerStep) / (float) framesPerStep;
+        if (frameCount % framesPerStep == 0) {
+            for (SnakeBoid snake : snakeBoids) {
+                snake.BoidBehaviors(snakeBoids);
+                snakeBoids = snake.Move(snakeBoids);
+            }
         }
         for (SnakeBoid snake : snakeBoids) {
-            snake.CheckCollisions(snakeBoids);
-            snake.Move();
-            snake.Draw(this);
-            //snake.Debug();
+            snake.Draw(constrain(t * 1.5f, 0, 1), simulationDrawWidth, simulationDrawHeight, this);
         }
     }
 
