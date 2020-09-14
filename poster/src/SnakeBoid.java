@@ -16,6 +16,8 @@ public class SnakeBoid {
 
     private int addSegments;
 
+    private boolean disruptor;
+
     private int[][] colors = {
             {255,   0,   0},
             {255, 255,   0},
@@ -35,6 +37,7 @@ public class SnakeBoid {
         segments = new ArrayList<>();
         segments.add(pos);
         addSegments = 0;
+        disruptor = false;
     }
 
     public SnakeBoid(PVector boundaries, PVector startPos) {
@@ -45,6 +48,7 @@ public class SnakeBoid {
         segments = new ArrayList<>();
         segments.add(pos);
         addSegments = 0;
+        disruptor = false;
     }
 
     public SnakeBoid(PVector boundaries, PVector startPos, PVector startDir) {
@@ -55,6 +59,7 @@ public class SnakeBoid {
         segments = new ArrayList<>();
         segments.add(pos);
         addSegments = 0;
+        disruptor = false;
     }
 
     public SnakeBoid(PVector boundaries, ArrayList<PVector> startSegments, PVector startDir) {
@@ -64,6 +69,7 @@ public class SnakeBoid {
         target = PVector.add(pos, dir);
         segments = startSegments;
         addSegments = 0;
+        disruptor = true;
     }
 
     public void BoidBehaviors(ArrayList<SnakeBoid> snakes) {
@@ -83,7 +89,9 @@ public class SnakeBoid {
             }
         }
         dir.add(AttractionBehavior(snakes));
-        dir.add(DisruptionBehavior(snakes));
+        if (disruptor) {
+            dir.add(DisruptionBehavior(snakes));
+        }
         dir.normalize();
         dir = Get4WayDirection(dir);
     }
@@ -112,40 +120,29 @@ public class SnakeBoid {
         CheckSnakes(snakes, snakeDiffs);
     }
 
-    public void Draw(float amt, int width, int height, PApplet canvas) {
+    public void Draw(float amt, int minX, int minY, int maxX, int maxY, PApplet canvas) {
         int color = (segments.size() - 1) % 6;
         canvas.fill(colors[color][0], colors[color][1], colors[color][2]);
         canvas.stroke(colors[color][0], colors[color][1], colors[color][2]);
 
         PVector renderPos = PVector.lerp(pos, target, amt);
 
-        int canvasWidth  = canvas.width;
-        int canvasHeight = canvas.height;
+        int width = maxX - minX;
+        int height = maxY - minY;
 
-        canvas.strokeWeight(0);
-        canvas.circle(0.5f * (0.5f * (canvasWidth - width) + (width + canvasWidth) * renderPos.x / bounds.x),
-                0.5f * (0.5f * (canvasHeight - height) + (height + canvasHeight) * renderPos.y / bounds.y),
-                10);
-
-        if (segments.size() > 1) {
-            canvas.strokeWeight(10);
-            canvas.line(0.5f * (0.5f * (canvasWidth - width) + (width + canvasWidth) * renderPos.x / bounds.x),
-                    0.5f * (0.5f * (canvasHeight - height) + (height + canvasHeight) * renderPos.y / bounds.y),
-                    0.5f * (0.5f * (canvasWidth - width) + (width + canvasHeight) * PVector.lerp(segments.get(segments.size() - 2), segments.get(segments.size() - 1), amt).x / bounds.x),
-                    0.5f * (0.5f * (canvasHeight - height) + (height + canvasHeight) * PVector.lerp(segments.get(segments.size() - 2), segments.get(segments.size() - 1) , amt).y / bounds.y));
+        if (segments.size() == 1) {
+            canvas.strokeWeight(0);
+            canvas.circle(minX + width / bounds.x * renderPos.x,
+                    minX + height / bounds.y * renderPos.y, 10);
         }
-
-        for (int i = 0; i < segments.size() - 1; i++) {
-            /*canvas.strokeWeight(0);
-            canvas.circle(0.5f * (0.5f * (canvasWidth - width)  + (width + canvasWidth) * PVector.lerp(segments.get(i), segments.get(i + 1), amt).x / bounds.x),
-                    0.5f * (0.5f * (canvasHeight - height) + (height + canvasHeight) * PVector.lerp(segments.get(i), segments.get(i + 1), amt).y / bounds.y),
-                    10);*/
-            if (i > 0) {
-                canvas.strokeWeight(10);
-                canvas.line(0.5f * (0.5f * (canvasWidth - width) + (width + canvasWidth) * PVector.lerp(segments.get(i - 1), segments.get(i), amt).x / bounds.x),
-                        0.5f * (0.5f * (canvasHeight - height) + (height + canvasHeight) * PVector.lerp(segments.get(i - 1), segments.get(i), amt).y / bounds.y),
-                        0.5f * (0.5f * (canvasWidth - width) + (width + canvasWidth) * PVector.lerp(segments.get(i), segments.get(i + 1), amt).x / bounds.x),
-                        0.5f * (0.5f * (canvasHeight - height) + (height + canvasHeight) * PVector.lerp(segments.get(i), segments.get(i + 1), amt).y / bounds.y));
+        else {
+            canvas.strokeWeight(10);
+            PVector firstPos = renderPos;
+            for (int i = segments.size() - 1; i > 0; i--) {
+                PVector secondPos = PVector.lerp(segments.get(i - 1), segments.get(i), amt);
+                canvas.line(minX + width / bounds.x * firstPos.x, minY + height / bounds.y * firstPos.y,
+                        minX + width / bounds.x * secondPos.x, minY + height / bounds.y * secondPos.y);
+                firstPos = secondPos;
             }
         }
     }

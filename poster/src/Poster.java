@@ -5,17 +5,21 @@ import java.util.ArrayList;
 
 public class Poster extends PApplet {
 
-    public int canvasWidth  = 600;
-    public int canvasHeight = 600;
+    public int canvasWidth  = 715;
+    public int canvasHeight = 1045;
 
-    public int simulationWidth  = 20;
-    public int simulationHeight = 20;
-    public int simulationDrawWidth  = 500;
-    public int simulationDrawHeight = 500;
+    public int simulationWidth  = 16;
+    public int simulationHeight = 8;
+    public int[][] simulationDrawBounds = {
+            {100, 100},
+            {500, 300}
+    };
+    public int simulationDrawWidth  = 400;
+    public int simulationDrawHeight = 50;
 
-    public int startingSnakes = 40;
+    public int startingSnakes = 50;
 
-    public int framesPerStep = 20;
+    public int framesPerStep = 15;
 
     public ArrayList<SnakeBoid> snakeBoids;
     public ArrayList<ArrayList<SnakeBoid>> snakeDiffs;
@@ -47,7 +51,17 @@ public class Poster extends PApplet {
         }
         UpdateSnakesArrayList();
         for (SnakeBoid snake : snakeBoids) {
-            snake.Draw(constrain(t * 1.5f, 0, 1), simulationDrawWidth, simulationDrawHeight, this);
+            snake.Draw(constrain(t * 1.5f, 0, 1), simulationDrawBounds[0][0], simulationDrawBounds[0][1], simulationDrawBounds[1][0], simulationDrawBounds[1][1], this);
+        }
+    }
+
+    public void mouseClicked() {
+        snakeBoids.clear();
+        snakeDiffs.get(0).clear();
+        snakeDiffs.get(1).clear();
+        PVector boundaries = new PVector(simulationWidth, simulationHeight);
+        for (int i = 0; i < startingSnakes; i++) {
+            snakeBoids.add(new SnakeBoid(boundaries));
         }
     }
 
