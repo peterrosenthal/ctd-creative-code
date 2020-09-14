@@ -1,5 +1,4 @@
 import java.io.Console;
-import java.security.spec.DSAGenParameterSpec;
 import java.util.*;
 
 import processing.core.PApplet;
@@ -14,17 +13,31 @@ public class SnakeBoid {
 
     public ArrayList<PVector> segments;
 
+    public boolean cutCorners = false;
+
     private int addSegments;
 
     private boolean disruptor;
 
-    private int[][] colors = {
-            {255,   0,   0},
-            {255, 255,   0},
-            {  0, 255,   0},
-            {  0, 255, 255},
-            {  0,   0, 255},
-            {255,   0, 255}
+    private int[] colors = {
+            0xff5c2361,
+            0xff49236a,
+            0xff2f2273,
+            0xff21367c,
+            0xff205e86,
+            0xff1f8e90,
+            0xff1d9a6c,
+            0xff299d40,
+            0xff4c9f34,
+            0xff80a23f,
+            0xffa59e4a,
+            0xffa87d55,
+            0xffac645f,
+            0xffaf6a83,
+            0xffb374a9,
+            0xffaa7eb7,
+            0xff9a88ba,
+            0xff9296bf
     };
 
     public SnakeBoid(PVector boundaries) {
@@ -121,9 +134,11 @@ public class SnakeBoid {
     }
 
     public void Draw(float amt, int minX, int minY, int maxX, int maxY, PApplet canvas) {
-        int color = (segments.size() - 1) % 6;
-        canvas.fill(colors[color][0], colors[color][1], colors[color][2]);
-        canvas.stroke(colors[color][0], colors[color][1], colors[color][2]);
+        int color = colors[PApplet.min(segments.size(), colors.length) - 1];
+        canvas.fill(color);
+        canvas.stroke(color);
+        //canvas.fill(0);
+        //canvas.stroke(0);
 
         PVector renderPos = PVector.lerp(pos, target, amt);
 
@@ -133,16 +148,36 @@ public class SnakeBoid {
         if (segments.size() == 1) {
             canvas.strokeWeight(0);
             canvas.circle(minX + width / bounds.x * renderPos.x,
-                    minX + height / bounds.y * renderPos.y, 10);
+                    minY + height / bounds.y * renderPos.y, 10);
         }
         else {
             canvas.strokeWeight(10);
-            PVector firstPos = renderPos;
-            for (int i = segments.size() - 1; i > 0; i--) {
-                PVector secondPos = PVector.lerp(segments.get(i - 1), segments.get(i), amt);
-                canvas.line(minX + width / bounds.x * firstPos.x, minY + height / bounds.y * firstPos.y,
-                        minX + width / bounds.x * secondPos.x, minY + height / bounds.y * secondPos.y);
-                firstPos = secondPos;
+            if (cutCorners) {
+                PVector firstPos = renderPos;
+                for (int i = segments.size() - 1; i > 0; i--) {
+                    PVector secondPos = PVector.lerp(segments.get(i - 1), segments.get(i), amt);
+                    canvas.line(minX + width / bounds.x * firstPos.x, minY + height / bounds.y * firstPos.y,
+                            minX + width / bounds.x * secondPos.x, minY + height / bounds.y * secondPos.y);
+                    firstPos = secondPos;
+                }
+            }
+            else {
+                PVector firstPos = renderPos;
+                for (int i = segments.size() - 1; i > 0; i--) {
+                    PVector secondPos = segments.get(i);
+                    PVector thirdPos;
+                    if (addSegments > 0 && i == 1) {
+                        thirdPos = segments.get(1);
+                    }
+                    else {
+                        thirdPos = PVector.lerp(segments.get(i - 1), segments.get(i), amt);
+                    }
+                    canvas.line(minX + width / bounds.x * firstPos.x, minY + height / bounds.y * firstPos.y,
+                            minX + width / bounds.x * secondPos.x, minY + height / bounds.y * secondPos.y);
+                    canvas.line(minX + width / bounds.x * secondPos.x, minY + height / bounds.y * secondPos.y,
+                            minX + width / bounds.x * thirdPos.x, minY + height / bounds.y * thirdPos.y);
+                    firstPos = thirdPos;
+                }
             }
         }
     }
@@ -334,13 +369,13 @@ public class SnakeBoid {
         SnakeBoid snakeToBeAdded = null;
         for (SnakeBoid snake : snakes) {
             if (snake != this && PVectorSoftEquals(snake.target, target)) {
-                addSegments = snake.segments.size();
+                addSegments = 1 + snake.segments.size() + snake.addSegments;
                 snakeToBeDeleted = snake;
             }
             for (int i = 1; i < snake.segments.size(); i++) {
                 if (PVectorSoftEquals(target, snake.segments.get(i))) {
                     if (snake != this) {
-                        addSegments = 1;
+                        addSegments = 1 + snake.addSegments;
                         snakeToBeAdded = snake.Split(i);
                     }
                 }
