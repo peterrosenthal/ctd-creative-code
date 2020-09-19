@@ -7,47 +7,24 @@ import processing.core.PVector;
 
 public class Clock extends PApplet {
 
-    public PVector canvasSize  = new PVector(500, 500);
-    public PVector resolution  = new PVector(10, 10);
+    public PVector canvasSize  = new PVector(800, 800);
+    public PVector resolution  = new PVector(50, 50);
     public PVector gridSize    = new PVector(
             canvasSize.x / (resolution.x - 1),
             canvasSize.y / (resolution.y - 1)
     );
 
-    public float     threshold = 0.5f;
-    public float[][] field;
-    public int[][]   binaryField;
+    public float     threshold   = 0.5f;
+    public float[][] field       = new float[(int) resolution.x][(int) resolution.y];
+    public int[][]   binaryField = new   int[(int) resolution.x][(int) resolution.y];
 
     public void settings() {
         size((int) canvasSize.x, (int) canvasSize.y);
     }
 
-    public void setup() {
-        field = new float[(int) resolution.x][(int) resolution.y];
-        binaryField = new int[(int) resolution.x][(int) resolution.y];
-        for (int i = 0; i < resolution.x; i++) {
-            for (int j = 0; j < resolution.y; j++) {
-                float x = gridSize.x * i;
-                float y = gridSize.y * j;
-                field[i][j] = noise(x, y);
-                binaryField[i][j] = (field[i][j] > threshold) ? 1 : 0;
-            }
-        }
-    }
-
     public void draw() {
         background(0, 0, 0);
-        for (int i = 0; i < resolution.x; i++) {
-            for (int j = 0; j < resolution.y; j++) {
-                float x = gridSize.x * i;
-                float y = gridSize.y * j;
-                stroke(field[i][j] * 255, 0, 0);
-                strokeWeight(20);
-                point(x, y);
-
-                binaryField[i][j] = (field[i][j] > threshold) ? 1 : 0;
-            }
-        }
+        updateField();
 
         for (int i = 0; i < resolution.x - 1; i++) {
             for (int j = 0; j < resolution.y - 1; j++) {
@@ -59,14 +36,41 @@ public class Clock extends PApplet {
                 PVector bottomRight = new PVector(x + gridSize.x, y + gridSize.y);
                 PVector bottomLeft  = new PVector(                x, y + gridSize.y);
 
-                // midpoints
-                PVector top    = PVector.lerp(topLeft, topRight, field[i+1][j] / (field[i][j] + field[i+1][j]));
-                PVector right  = PVector.lerp(topRight, bottomRight, field[i+1][j+1] / (field[i+1][j] + field[i+1][j+1]));
-                PVector bottom = PVector.lerp(bottomRight, bottomLeft, field[i][j+1] / (field[i+1][j+1] + field[i][j+1]));
-                PVector left   = PVector.lerp(bottomLeft, topLeft, field[i][j] / (field[i][j+1] + field[i][j]));
+                // midpoints with lerping
+                PVector top;
+                if (binaryField[i][j] == binaryField[i+1][j]) {
+                    top = new PVector(x + gridSize.x / 2, y);
+                }
+                else {
+                    top = PVector.lerp(topLeft, topRight, (threshold - field[i][j]) / (field[i+1][j] - field[i][j]));
+                }
 
-                stroke(255, 255, 255);
-                strokeWeight(1);
+                PVector right;
+                if (binaryField[i+1][j] == binaryField[i+1][j+1]) {
+                    right  = new PVector(x + gridSize.x, y + gridSize.y / 1.5f);
+                }
+                else {
+                    right = PVector.lerp(topRight, bottomRight, (threshold - field[i+1][j]) / (field[i+1][j+1] - field[i+1][j]));
+                }
+
+                PVector bottom;
+                if (binaryField[i+1][j+1] == field[i][j+1]) {
+                    bottom = new PVector(x + gridSize.x / 2, y + gridSize.y);
+                }
+                else {
+                    bottom = PVector.lerp(bottomRight, bottomLeft, (threshold - field[i+1][j+1]) / (field[i][j+1] - field[i+1][j+1]));
+                }
+
+                PVector left;
+                if (binaryField[i][j+1] == field[i][j]) {
+                    left   = new PVector(x, y + gridSize.y / 2);
+                }
+                else {
+                    left = PVector.lerp(bottomLeft, topLeft, (threshold - field[i][j+1]) / (field[i][j] - field[i][j+1]));
+                }
+
+                fill(255, 255, 255);
+                strokeWeight(0);
                 int cellWeight = binaryField[i][j] * 8 + binaryField[i+1][j] * 4 + binaryField[i+1][j+1] * 2 + binaryField[i][j+1];
                 float center = (field[i][j] + field[i+1][j] + field[i+1][j+1] + field[i][j+1]) / 4;
                 switch (cellWeight) {
@@ -156,6 +160,28 @@ public class Clock extends PApplet {
                 }
             }
         }
+    }
+
+    private void updateField() {
+        PVector fixedCenter = new PVector(canvasSize.x / 2, canvasSize.y / 2);
+        PVector fixedSpread = new PVector(100, 100);
+        for (int i = 0; i < resolution.x; i++) {
+            for (int j = 0; j < resolution.y; j++) {
+                PVector location = new PVector(gridSize.x * i, gridSize.y * j);
+                PVector mousePos = new PVector(mouseX, mouseY);
+                field[i][j] = gaussian2d(fixedCenter, fixedSpread, location) + gaussian2d(mousePos, fixedSpread, location);
+
+                binaryField[i][j] = (field[i][j] > threshold) ? 1 : 0;
+
+                //stroke(255, 255, 255);
+                //strokeWeight(2);
+                //point(location.x, location.y);
+            }
+        }
+    }
+
+    private float gaussian2d (PVector center, PVector spread, PVector location) {
+        return exp(-((location.x - center.x) * (location.x - center.x) / (2 * spread.x * spread.x) + (location.y - center.y) * (location.y - center.y) / (2 * spread.y * spread.y)));
     }
 
     private void triangle(PVector a, PVector b, PVector c) {
