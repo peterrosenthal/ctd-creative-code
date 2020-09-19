@@ -53,17 +53,17 @@ public class Clock extends PApplet {
             for (int j = 0; j < resolution.y - 1; j++) {
                 float x = gridSize.x * i;
                 float y = gridSize.y * j;
-                // midpoints
-                PVector top    = new PVector(x + gridSize.x / 2,                     y);
-                PVector right  = new PVector(    x + gridSize.x, y + gridSize.y / 2);
-                PVector bottom = new PVector(x + gridSize.x / 2,     y + gridSize.y);
-                PVector left   = new PVector(                    x, y + gridSize.y / 2);
-
                 // corners
                 PVector topLeft     = new PVector(                x,                 y);
                 PVector topRight    = new PVector(x + gridSize.x,                 y);
                 PVector bottomRight = new PVector(x + gridSize.x, y + gridSize.y);
                 PVector bottomLeft  = new PVector(                x, y + gridSize.y);
+
+                // midpoints
+                PVector top    = PVector.lerp(topLeft, topRight, field[i+1][j] / (field[i][j] + field[i+1][j]));
+                PVector right  = PVector.lerp(topRight, bottomRight, field[i+1][j+1] / (field[i+1][j] + field[i+1][j+1]));
+                PVector bottom = PVector.lerp(bottomRight, bottomLeft, field[i][j+1] / (field[i+1][j+1] + field[i][j+1]));
+                PVector left   = PVector.lerp(bottomLeft, topLeft, field[i][j] / (field[i][j+1] + field[i][j]));
 
                 stroke(255, 255, 255);
                 strokeWeight(1);
@@ -156,10 +156,6 @@ public class Clock extends PApplet {
                 }
             }
         }
-    }
-
-    private void line(PVector a, PVector b) {
-        line(a.x, a.y, b.x, b.y);
     }
 
     private void triangle(PVector a, PVector b, PVector c) {
