@@ -1,4 +1,4 @@
-// This sketch makes a metaballs (not meatballs... unfortunately) based clock using a naive marching squares algorithm.
+// This sketch makes a metaballs (not meatballs... unfortunately) based clock using a marching squares algorithm.
 
 package al.rosenth.peter.clock;
 
@@ -134,7 +134,7 @@ public class Clock extends PApplet {
                 minutes[i][j] = 0;
                 seconds[i][j] = 0;
                 if (hourDots.size() > 0) {
-                    if (secondDots.size() < 59 || hourDots.size() < 23) {
+                    if (secondDots.size() < 59 || hourDots.size() < 24) {
                         float bounce = bounceIn(map(millis() - animationTimeHours, 0, 500, 0, 1));
                         hours[i][j] += gaussian2d(hourDots.get(hourDots.size() - 1), PVector.mult(hourSpread, bounce), location);
                         for (int k = 0; k < hourDots.size() - 1; k++) {
