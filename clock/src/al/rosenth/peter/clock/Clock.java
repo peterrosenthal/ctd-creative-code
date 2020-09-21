@@ -1,4 +1,4 @@
-// This sketch makes a metaballs (not meatballs... unfortunately) based clock using a marching squares algorithm.
+// This sketch makes a meatballs clock using a marching squares algorithm.
 
 package al.rosenth.peter.clock;
 
@@ -15,7 +15,7 @@ public class Clock extends PApplet {
     public float spiralScale    = 19;
     public float rotationSpeed  = -0.00004f;
     public float wiggleAmount   = 0.03f;
-    public float wiggleSpeed    = 0.001f;
+    public float wiggleSpeed    = 0.00025f;
     public float hourDotScale   = 18;
     public float minuteDotScale = 16;
     public float secondDotScale = 14.2f;
@@ -43,6 +43,7 @@ public class Clock extends PApplet {
     private float animationTimeSeconds = 0;
 
     private float[] randomPhaseOffsets;
+    private float[] randomFrequencies;
 
     private final PVector gridSize = new PVector(canvasSize.x / (resolution.x - 1), canvasSize.y / (resolution.y - 1));
 
@@ -58,6 +59,7 @@ public class Clock extends PApplet {
 
     public void setup() {
         setPhaseOffsets();
+        setRandomFrequencies();
 
         for (int i = 0; i < hour(); i++) {
             hourDots.add(dotInSpiral(i));
@@ -194,7 +196,7 @@ public class Clock extends PApplet {
 
     private PVector dotInSpiral(int index) {
         float r = spiralScale * sqrt(index);
-        float theta = index * PI * (3 - sqrt(5)) + rotationSpeed * millis() + wiggleAmount * sin(wiggleSpeed * millis() + randomPhaseOffsets[index]);
+        float theta = index * PI * (3 - sqrt(5)) + rotationSpeed * millis() + wiggleAmount * sin(randomFrequencies[index] * millis() + randomPhaseOffsets[index]);
         return new PVector(canvasSize.x / 2 + r * cos(theta), canvasSize.y / 2 + r * sin(theta));
     }
 
@@ -353,6 +355,13 @@ public class Clock extends PApplet {
         randomPhaseOffsets = new float[144];
         for (int i = 0; i < 144; i++) {
             randomPhaseOffsets[i] = random(0, 2 * PI);
+        }
+    }
+
+    private void setRandomFrequencies() {
+        randomFrequencies = new float[144];
+        for (int i = 0; i < 144; i++) {
+            randomFrequencies[i] = wiggleSpeed * random(0, 2 * PI);
         }
     }
 
