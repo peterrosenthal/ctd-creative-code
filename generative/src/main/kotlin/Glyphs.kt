@@ -1,6 +1,7 @@
 import org.openrndr.application
 import org.openrndr.color.ColorHSVa
 import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.LineCap
 import org.openrndr.extra.gui.GUI
 import org.openrndr.extra.noise.Random
 import org.openrndr.extra.olive.oliveProgram
@@ -23,7 +24,7 @@ fun main() = application {
     }
 
     oliveProgram {
-        fun generateGlyphs(number: Int, color: ColorHSVa) = List(number) {
+        fun generateGlyphs(number: Int, color: ColorHSVa, calcDiag: Boolean) = List(number) {
             var rows = ceil(sqrt(number.toDouble())).toInt()
             var columns = rows
             if (rows * (rows - 1) >= number) {
@@ -38,7 +39,7 @@ fun main() = application {
             val size = min(width, height) / (max(rows, columns) + 4.0)
 
             val straights = List(12) { Random.int0(2) }
-            val diagonals = List(8) { Random.int0(2) }
+            val diagonals = List(8) { Random.int0(if (calcDiag) 2 else 1) }
 
             Glyph(
                 List(9) { jt -> Vector2(position.x - size / 2.0 + (jt % 3) * size / 3.0, position.y - size / 2.0 + (jt / 3) * size / 3.0) },
@@ -57,7 +58,7 @@ fun main() = application {
                 ColorHSVa(color.h, color.s + Random.double(-0.4, 0.4), color.v + Random.double(-0.1, 0.1)).toRGBa()
             )
         }
-        var glyphs: List<Glyph>
+        var glyphs = generateGlyphs(0, ColorHSVa(0.0, 1.0, 1.0), true)
 
         val settings = @Description("settings") object {
             @ColorParameter("background color", 1)
@@ -69,19 +70,20 @@ fun main() = application {
             @IntParameter("number of glyphs", 1, 100, 3)
             var numGlyphs = 1
 
-            @DoubleParameter("dot size", 0.0, 2.0, 4)
+            @DoubleParameter("dot size", 0.0, 2.0, 3, 4)
             var dotScale = 1.0
 
-            @DoubleParameter("line thickness", 0.0, 2.0, 5)
+            @DoubleParameter("line thickness", 0.0, 2.0, 3, 5)
             var lineWeight = 1.0
 
-            @ActionParameter("generate glyphs", 6)
+            @BooleanParameter("draw diagonals", 6)
+            var drawDiagonals = true
+
+            @ActionParameter("generate glyphs", 7)
             fun clicked() {
-                glyphs = generateGlyphs(numGlyphs, glyphColor.toHSVa())
+                glyphs = generateGlyphs(numGlyphs, glyphColor.toHSVa(), drawDiagonals)
             }
         }
-
-        glyphs = generateGlyphs(settings.numGlyphs, settings.glyphColor.toHSVa())
 
         extend(GUI()) {
             add(settings)
@@ -92,6 +94,7 @@ fun main() = application {
                 drawer.fill = glyph.color
                 drawer.stroke = glyph.color
                 drawer.strokeWeight = 4.0 * settings.lineWeight
+                drawer.lineCap = LineCap.ROUND
 
                 glyph.lines.forEachIndexed { index, line ->
                     if (line > 0) {
