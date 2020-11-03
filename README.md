@@ -10,3 +10,4 @@ Class repository for ATLS 5660
 - [Week 7: Data Visualization](https://github.com/peterrosenthal/honey-vis)
 - [Week 8: 3D](https://github.com/peterrosenthal/wandering)
 - [Week 9: Hardware Sensors](P5js/soli/soli-theramin.js)
+- [Week 10: Sound](P5js/synthball)
